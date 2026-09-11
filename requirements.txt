@@ -1,0 +1,8 @@
+# Web framework for the API
+Flask>=3.0
+
+# Testing framework for API validation
+pytest>=8.0
+
+# Optional but commonly used for better dev experience
+python-dotenv>=1.0.0
