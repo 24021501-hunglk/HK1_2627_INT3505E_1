@@ -1,17 +1,41 @@
-from flask import Flask, jsonify
-from uuid import uuid4
+from flask import Flask, jsonify, request
 app = Flask(__name__)
-ORDERS = {"1": {"id": "1", "status": "pending"},
-          "2": {"id": "2", "status": "shipped"},
-          "3": {"id": "3", "status": "delivered"}}
-@app.route("/orders/<order_id>", methods = ["DELETE"])
-def delete_order(order_id):
-    order = ORDERS.get(order_id)
-    if order is None:
-        return {"error": "not found"}, 404
-    if order["status"] in ("shipped", "delivered"):
-        return {"error": "cannot delete"}, 409
-    ORDERS.pop(order_id,None)
+_next = 2
+BOOKS = [{"id":1, "title":"Clean Code", "author":"R. Martin"}]
+
+def find(bid):
+    return next((b for b in BOOKS if b["id"] == bid), None)
+
+@app.route("/books", methods=["GET"])
+def list_books():
+    n = int(request.args.get("limit", 100))
+    return jsonify(BOOKS[:n]), 200
+
+@app.route("/books/<int:bid>", methods=["GET"])
+def get_book(bid):
+    book = find(bid)
+    if not book: return {"error":"not found"}, 404
+    return jsonify(book), 200
+
+@app.route("/books", methods=["POST"])
+def create_book():
+    global _next 
+    body = request.get_json(silent=True) or {}
+    t, a = body.get("title"), body.get("author")
+    if not t or not a:
+        return {"error":"need title + author"}, 400
+    book = {"id":_next, "title": t, "author": a}
+    _next += 1; BOOKS.append(book)
+    return jsonify(book), 201, {"Location": f"/books/{book['id']}"}
+
+@app.route("/books/<int:bid>", methods=["PUT", "DELETE"])
+def modify_book(bid):
+    book = find(bid)
+    if not book: return {"error":"not found"}, 404
+    if request.method == "PUT":
+        book.update(request.get_json(silent=True) or {})
+        return jsonify(book), 200
+    BOOKS.remove(book)
     return "", 204
 
 if __name__ == "__main__":
