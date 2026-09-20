@@ -1,42 +1,30 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, make_response
 app = Flask(__name__)
-_next = 2
-BOOKS = [{"id":1, "title":"Clean Code", "author":"R. Martin"}]
+BOOKS = []
+_next_id = 1
 
-def find(bid):
-    return next((b for b in BOOKS if b["id"] == bid), None)
-
-@app.route("/books", methods=["GET"])
+@app.get("/books")
 def list_books():
-    n = int(request.args.get("limit", 100))
-    return jsonify(BOOKS[:n]), 200
+    return jsonify({
+        "data":BOOKS,
+        "total": len(BOOKS)
+    }), 200
 
-@app.route("/books/<int:bid>", methods=["GET"])
-def get_book(bid):
-    book = find(bid)
-    if not book: return {"error":"not found"}, 404
-    return jsonify(book), 200
-
-@app.route("/books", methods=["POST"])
+@app.post("/books")
 def create_book():
-    global _next 
-    body = request.get_json(silent=True) or {}
-    t, a = body.get("title"), body.get("author")
+    global _next_id
+    if not request.is_json:
+        return jsonify(error = "expected JSON"), 415
+    p = request.get_json(silent=True) or {}
+    t = (p.get("title") or "").strip()
+    a = (p.get("author") or "").strip()
     if not t or not a:
-        return {"error":"need title + author"}, 400
-    book = {"id":_next, "title": t, "author": a}
-    _next += 1; BOOKS.append(book)
-    return jsonify(book), 201, {"Location": f"/books/{book['id']}"}
-
-@app.route("/books/<int:bid>", methods=["PUT", "DELETE"])
-def modify_book(bid):
-    book = find(bid)
-    if not book: return {"error":"not found"}, 404
-    if request.method == "PUT":
-        book.update(request.get_json(silent=True) or {})
-        return jsonify(book), 200
-    BOOKS.remove(book)
-    return "", 204
+        return jsonify(error = "title and author required"), 422
+    book = {"id": _next_id, "title": t, "author": a}
+    BOOKS.append(book); _next_id += 1
+    resp = make_response(jsonify(book), 201)
+    resp.headers["Location"] = f"/books/{book["id"]}"
+    return resp
 
 if __name__ == "__main__":
-    app.run(host = "127.0.0.1", port = 5000,debug=True)
+    app.run(debug=True)
