@@ -1,5 +1,5 @@
-from flask import Flask, jsonify, request
-import sqlite3
+from flask import Flask, jsonify, request, make_response
+import sqlite3, hashlib
 app = Flask(__name__)
 DB_FILE = "books.db"
 
@@ -54,6 +54,16 @@ def list_books():
     db = get_db()
     rows = db.execute("SELECT * FROM books").fetchall()
     return jsonify([row_to_book(r) for r in rows]), 200
+
+@app.get('/books/<int:bid>')
+def fetch(bid):
+    db = get_db()
+    row = db.execute('SELECT * FROM books WHERE id = ?', (bid,)).fetchone()
+    if row is None:
+        return jsonify(error = 'not found'), 404
+    resp = make_response(jsonify(row_to_book(row)),200)
+    resp.headers['Cache-Control'] = 'max-age=60'
+    return resp
 
 @app.put("/books/<int:bid>")
 def put(bid):
