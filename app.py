@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request, make_response
-import sqlite3, hashlib
+import sqlite3, hashlib, json
 app = Flask(__name__)
 DB_FILE = "books.db"
 
@@ -61,7 +61,24 @@ def fetch(bid):
     row = db.execute('SELECT * FROM books WHERE id = ?', (bid,)).fetchone()
     if row is None:
         return jsonify(error = 'not found'), 404
-    resp = make_response(jsonify(row_to_book(row)),200)
+
+    book = row_to_book(row)
+    book_json = json.dumps(book, sort_keys = True, separators = ("," , ":"))
+
+    etag = hashlib.sha256(book_json.encode("utf-8")).hexdigest()
+
+    etag = f'"{etag}"'
+
+    client_etag = request.headers.get("If-None-Match")
+
+    if client_etag == etag:
+        resp = make_response('', 304)
+        resp.headers['ETag'] = etag
+        resp.headers['Cache-Control'] = 'max-age=60'
+        return resp
+    
+    resp = make_response(jsonify(book),200)
+    resp.headers['ETag'] = etag
     resp.headers['Cache-Control'] = 'max-age=60'
     return resp
 
