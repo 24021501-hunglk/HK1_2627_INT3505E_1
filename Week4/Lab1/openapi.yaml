@@ -1,0 +1,324 @@
+openapi: 3.0.3
+info: {title: Tasks API, version: 1.0.0, description: Quản lý task nội bộ}
+servers: [{url: 'http://localhost:5000/v1'}]
+tags: [{name: Tasks}]
+paths:
+  /tasks:
+    get:
+      operationId: listTasks
+      parameters:
+        - $ref: '#/components/parameters/PageLimit'
+        - $ref: '#/components/parameters/StatusFilter'
+      responses:
+        '200':
+          description: Danh sach tasks 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskPage'
+    post:
+      operationId: createTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaskInput'
+      responses:
+        '201':
+          description: Tao task thanh cong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /tasks/{id}:
+    parameters:
+      - $ref: '#/components/parameters/TaskId'
+    get:
+      operationId: getTask
+      responses:
+        '200':
+          description: Thong tin task 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: updateTask 
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTaskInput'
+      responses:
+        '200':
+          description: Cap nhat thanh cong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+
+        '404': 
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      operationId: deleteTask
+      responses:
+        '204':
+          description: Xoa thanh cong
+        '404':
+          $ref: '#/components/responses/NotFound'
+          
+components:
+
+  parameters:
+
+    PageLimit:
+      name: limit
+      in: query
+      description: Số lượng task tối đa trả về
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+    StatusFilter:
+      name: status
+      in: query
+      description: Lọc task theo trạng thái
+      required: false
+      schema:
+        type: string
+        enum:
+          - todo
+          - in_progress
+          - done
+
+    TaskId:
+      name: id
+      in: path
+      description: ID của task
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+
+  schemas:
+
+    Task:
+      type: object
+      required:
+        - id
+        - title
+        - status
+        - priority
+        - dueDate
+        - assigneeId
+
+      properties:
+
+        id:
+          type: integer
+          example: 1
+
+        title:
+          type: string
+          example: Completed API
+
+        status:
+          type: string
+          enum:
+            - todo
+            - in_progress
+            - done
+          example: done
+
+        priority:
+          type: string
+          enum:
+            - low
+            - medium
+            - high
+          example: low
+
+        dueDate:
+          type: string
+          format: date
+          example: '2026-10-15'
+
+        assigneeId:
+          type: integer
+          example: 101
+
+    CreateTaskInput:
+      type: object
+      required:
+        - title
+        - status
+        - priority
+        - dueDate
+        - assigneeId
+
+      properties:
+
+        title:
+          type: string
+          minLength: 1
+          example: Created API
+
+        status:
+          type: string
+          enum:
+            - todo
+            - in_progress
+            - done
+          example: done
+
+        priority:
+          type: string
+          enum:
+            - low
+            - medium
+            - high
+          example: high
+
+        dueDate:
+          type: string
+          format: date
+          example: '2026-10-15'
+
+        assigneeId:
+          type: integer
+          example: 101
+
+    UpdateTaskInput:
+      type: object
+      properties:
+
+        title:
+          type: string
+          minLength: 1
+          example: Hoàn thành OpenAPI
+
+        status:
+          type: string
+          enum:
+            - todo
+            - in_progress
+            - done
+          example: done
+
+        priority:
+          type: string
+          enum:
+            - low
+            - medium
+            - high
+          example: medium
+
+        dueDate:
+          type: string
+          format: date
+          example: '2026-10-20'
+
+        assigneeId:
+          type: integer
+          example: 102
+
+    TaskPage:
+      type: object
+      required:
+        - data
+        - limit
+
+      properties:
+
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Task'
+
+        limit:
+          type: integer
+          example: 20
+
+        next:
+          type: string
+          nullable: true
+          example: /v1/tasks?limit=20&status=todo&page=2
+
+    ValidationProblem:
+      type: object
+      properties:
+
+        type:
+          type: string
+          format: uri
+          example: https://example.com/problems/validation-error
+
+        title:
+          type: string
+          example: Validation Error
+
+        status:
+          type: integer
+          example: 422
+
+        detail:
+          type: string
+          example: Invalid Data
+
+        instance:
+          type: string
+          example: /v1/tasks
+
+    NotFoundProblem:
+      type: object
+      properties:
+
+        type:
+          type: string
+          format: uri
+          example: https://example.com/problems/not-found-error
+
+        title:
+          type: string
+          example: Not Found Error
+
+        status:
+          type: integer
+          example: 404
+
+        detail:
+          type: string
+          example: Data not found
+
+        instance:
+          type: string
+          example: /v1/tasks
+
+  responses:
+  
+    NotFound:
+      description: Task not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/NotFoundProblem'
+
+
+    ValidationError:
+      description: Invalid Data
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ValidationProblem'
