@@ -1,0 +1,8 @@
+    CityQuery:
+      name: city
+      in: query
+      required: false
+      description: Filter hotels by city
+      schema:
+        type: string
+        minLength: 1

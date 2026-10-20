@@ -1,0 +1,8 @@
+    PaymentId:
+      name: paymentId
+      in: path
+      required: true
+      description: Unique payment identifier
+      schema:
+        type: string
+        format: uuid

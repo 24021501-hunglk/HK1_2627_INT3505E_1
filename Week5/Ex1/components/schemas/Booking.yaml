@@ -1,0 +1,38 @@
+      type: object
+      required:
+        - bookingId
+        - customerId
+        - bookingDate
+        - checkIn
+        - checkOut
+        - status
+        - totalAmount
+        - rooms
+      properties:
+        bookingId:
+          type: string
+          format: uuid
+        customerId:
+          type: string
+          format: uuid
+        bookingDate:
+          type: string
+          format: date-time
+        checkIn:
+          type: string
+          format: date
+        checkOut:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled, completed]
+        totalAmount:
+          type: number
+          minimum: 0
+        rooms:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/BookingRoom'
+      additionalProperties: false

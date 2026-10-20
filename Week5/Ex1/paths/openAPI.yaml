@@ -1,0 +1,94 @@
+openapi: 3.1.0
+info:
+  title: Hotel Booking API
+  description: RESTful API cho quản lý đặt phòng khách sạn theo tài liệu Res_and_ep.md và sơ đồ ERD.
+  version: 1.0.0
+
+servers:
+  - url: https://api.hotelbooking.com/v1
+    description: Production server
+  - url: http://localhost:5000/api/v1
+    description: Development local server
+
+paths:
+  /hotels:
+    $ref: "#/paths/hotels/hotels.yaml"
+  /hotels/{hotel_id}:
+    $ref: "#/paths/hotels/hotel_detail.yaml"
+  /hotels/{hotel_id}/room-types:
+    $ref: "#/paths/hotels/hotel_room_type.yaml"
+
+  /customers:
+    $ref: "#/paths/customers/customers.yaml"
+  /customers/{customer_id}:
+    $ref: "#/paths/customers/customer_detail.yaml"
+  /customers/{customer_id}/bookings:
+    $ref: "#/paths/customers/customer_bookings.yaml"
+
+  /bookings:
+    $ref: "#/paths/bookings/bookings.yaml"
+  /bookings/{booking_id}:
+    $ref: "#/paths/bookings/booking_detail.yaml"
+  /bookings/{booking_id}/cancellation:
+    $ref: "#/paths/bookings/booking_cancellation.yaml"
+  /bookings/{booking_id}/payment:
+    $ref: "#/paths/bookings/booking_payment.yaml"
+
+components:
+  parameters:
+    hotelId:
+      $ref: "#/components/parameters/HotelID.yaml"
+    roomTypeId:
+      $ref: "#/components/parameters/RoomTypeID.yaml"
+    customerId:
+      $ref: "#/components/parameters/CustomerID.yaml"
+    bookingId:
+      $ref: "#/components/parameters/BookingID.yaml"
+    paymentId:
+      $ref: "#/components/parameters/PaymentID.yaml"
+    cityQuery:
+      $ref: "#/components/parameters/CityQuery.yaml"
+    pageQuery:
+      $ref: "#/components/parameters/PageQuery.yaml"
+    limitQuery:
+      $ref: "#/components/parameters/LimitQuery.yaml"
+
+  schemas:
+    Hotel:
+      $ref: "#/components/schemas/Hotel.yaml"
+    HotelInput:
+      $ref: "#/components/schemas/HotelInput.yaml"
+    HotelPatch:
+      $ref: "#/components/schemas/HotelPatch.yaml"
+    RoomType:
+      $ref: "#/components/schemas/RoomType.yaml"
+    RoomTypeInput:
+      $ref: "#/components/schemas/RoomTypeInput.yaml"
+    Room:
+      $ref: "#/components/schemas/Room.yaml"
+    Customer:
+      $ref: "#/components/schemas/Customer.yaml"
+    CustomerInput:
+      $ref: "#/components/schemas/CustomerInput.yaml"
+    Booking:
+      $ref: "#/components/schemas/Booking.yaml"
+    BookingInput:
+      $ref: "#/components/schemas/BookingInput.yaml"
+    BookingPatch:
+      $ref: "#/components/schemas/BookingPatch.yaml"
+    BookingRoom:
+      $ref: "#/components/schemas/BookingRoom.yaml"
+    BookingRoomInput:
+      $ref: "#/components/schemas/BookingRoomInput.yaml"
+    Payment:
+      $ref: "#/components/schemas/Payment.yaml"
+    PaymentInput:
+      $ref: "#/components/schemas/PaymentInput.yaml"
+    Error:
+      $ref: "#/components/schemas/Error.yaml"
+
+  responses:
+    BadRequest:
+      $ref: "#/components/responses/BadRequest.yaml"
+    NotFound:
+      $ref: "#/components/responses/NotFound.yaml"

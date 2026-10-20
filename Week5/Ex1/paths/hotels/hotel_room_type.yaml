@@ -1,0 +1,38 @@
+    parameters:
+      - $ref: '#/components/parameters/HotelId'
+    get:
+      tags: [Room Types]
+      summary: List room types at a hotel
+      operationId: listHotelRoomTypes
+      responses:
+        '200':
+          description: Room types retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoomType'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Room Types]
+      summary: Create a room type at a hotel
+      operationId: createHotelRoomType
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoomTypeInput'
+      responses:
+        '201':
+          description: Room type created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomType'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'

@@ -1,0 +1,18 @@
+      type: object
+      required: [customerId, checkIn, checkOut, rooms]
+      properties:
+        customerId:
+          type: string
+          format: uuid
+        checkIn:
+          type: string
+          format: date
+        checkOut:
+          type: string
+          format: date
+        rooms:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/BookingRoomInput'
+      additionalProperties: false

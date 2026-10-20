@@ -1,0 +1,8 @@
+    RoomTypeId:
+      name: roomTypeId
+      in: path
+      required: true
+      description: Unique room type identifier
+      schema:
+        type: string
+        format: uuid

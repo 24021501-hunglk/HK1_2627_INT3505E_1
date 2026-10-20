@@ -1,0 +1,13 @@
+      type: object
+      minProperties: 1
+      properties:
+        checkIn:
+          type: string
+          format: date
+        checkOut:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled, completed]
+      additionalProperties: false

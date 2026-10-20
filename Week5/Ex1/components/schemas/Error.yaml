@@ -1,0 +1,21 @@
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          examples: [NOT_FOUND, VALIDATION_ERROR, CONFLICT]
+        message:
+          type: string
+          minLength: 1
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              issue:
+                type: string
+            required: [field, issue]
+            additionalProperties: false
+      additionalProperties: false

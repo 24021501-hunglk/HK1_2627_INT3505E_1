@@ -1,0 +1,8 @@
+    CustomerId:
+      name: customerId
+      in: path
+      required: true
+      description: Unique customer identifier
+      schema:
+        type: string
+        format: uuid

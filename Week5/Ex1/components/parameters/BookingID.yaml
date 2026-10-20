@@ -1,0 +1,8 @@
+    BookingId:
+      name: bookingId
+      in: path
+      required: true
+      description: Unique booking identifier
+      schema:
+        type: string
+        format: uuid

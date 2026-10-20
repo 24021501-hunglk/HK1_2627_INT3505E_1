@@ -1,0 +1,36 @@
+    parameters:
+      - $ref: '#/components/parameters/HotelId'
+    get:
+      tags: [Hotels]
+      summary: Get a hotel
+      operationId: getHotel
+      responses:
+        '200':
+          description: Hotel retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hotel'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Hotels]
+      summary: Update hotel fields
+      operationId: updateHotel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HotelPatch'
+      responses:
+        '200':
+          description: Hotel updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hotel'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'

@@ -1,0 +1,17 @@
+      type: object
+      required: [roomId, roomTypeId, roomNumber, status]
+      properties:
+        roomId:
+          type: string
+          format: uuid
+        roomTypeId:
+          type: string
+          format: uuid
+        roomNumber:
+          type: string
+          minLength: 1
+          maxLength: 20
+        status:
+          type: string
+          enum: [available, occupied, maintenance, inactive]
+      additionalProperties: false

@@ -1,0 +1,13 @@
+      type: object
+      required: [roomId, guestCount, pricePerNight]
+      properties:
+        roomId:
+          type: string
+          format: uuid
+        guestCount:
+          type: integer
+          minimum: 1
+        pricePerNight:
+          type: number
+          minimum: 0
+      additionalProperties: false

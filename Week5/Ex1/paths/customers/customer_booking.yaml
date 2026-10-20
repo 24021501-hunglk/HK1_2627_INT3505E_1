@@ -1,0 +1,17 @@
+    parameters:
+      - $ref: '#/components/parameters/CustomerId'
+    get:
+      tags: [Bookings]
+      summary: List bookings for a customer
+      operationId: listCustomerBookings
+      responses:
+        '200':
+          description: Customer bookings retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+        '404':
+          $ref: '#/components/responses/NotFound'

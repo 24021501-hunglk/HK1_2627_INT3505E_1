@@ -1,0 +1,8 @@
+    HotelId:
+      name: hotelId
+      in: path
+      required: true
+      description: Unique hotel identifier
+      schema:
+        type: string
+        format: uuid

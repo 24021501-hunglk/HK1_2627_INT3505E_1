@@ -1,0 +1,10 @@
+      type: object
+      required: [amount, paymentMethod]
+      properties:
+        amount:
+          type: number
+          exclusiveMinimum: 0
+        paymentMethod:
+          type: string
+          enum: [credit_card, debit_card, bank_transfer, cash, e_wallet]
+      additionalProperties: false

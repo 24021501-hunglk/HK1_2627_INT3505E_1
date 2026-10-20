@@ -1,0 +1,22 @@
+      type: object
+      required: [paymentId, bookingId, amount, paymentMethod, status]
+      properties:
+        paymentId:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          exclusiveMinimum: 0
+        paymentMethod:
+          type: string
+          enum: [credit_card, debit_card, bank_transfer, cash, e_wallet]
+        status:
+          type: string
+          enum: [pending, successful, failed, refunded]
+        paidAt:
+          type: [string, 'null']
+          format: date-time
+      additionalProperties: false

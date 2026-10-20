@@ -1,0 +1,44 @@
+    parameters:
+      - $ref: '#/components/parameters/BookingId'
+    get:
+      tags: [Payments]
+      summary: List payments for a booking
+      operationId: listBookingPayments
+      responses:
+        '200':
+          description: Payments retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Payments]
+      summary: Create a payment for a booking
+      operationId: createBookingPayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentInput'
+      responses:
+        '201':
+          description: Payment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Payment conflicts with the booking state or amount due
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
