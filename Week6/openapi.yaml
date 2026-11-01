@@ -1,0 +1,430 @@
+
+openapi: 3.0.3
+
+info:
+  title: Social Network API
+  description: API for authentication and retrieving social network posts.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:5000/api/v1
+    description: Development server
+
+tags:
+  - name: Authentication
+    description: User authentication and token management
+  - name: Posts
+    description: Post management
+
+paths:
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate a user and return access and refresh tokens.
+
+      security: []
+
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - grant_type
+                - username
+                - password
+              properties:
+                grant_type:
+                  type: string
+                  enum: [password]
+                username:
+                  type: string
+                password:
+                  type: string
+                  format: password
+                scope:
+                  type: string
+                  example: posts:read
+
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+              examples:
+                success:
+                  summary: Successful login
+                  value:
+                    access_token: "eyJhbGciOiJIUzI1NiJ9.access_token"
+                    refresh_token: "eyJhbGciOiJIUzI1NiJ9.refresh_token"
+                    token_type: Bearer
+                    expires_in: 900
+                    scope: posts:read
+
+        '400':
+          description: Invalid request or missing fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missing_username:
+                  summary: Missing username
+                  value:
+                    error: invalid_request
+                    message: Username is required.
+                missing_password:
+                  summary: Missing password
+                  value:
+                    error: invalid_request
+                    message: Password is required.
+
+        '401':
+          description: Invalid username or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalid_credentials:
+                  summary: Incorrect login credentials
+                  value:
+                    error: invalid_credentials
+                    message: Invalid username or password.
+
+        '429':
+          description: Too many login attempts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                rate_limit_exceeded:
+                  summary: Login rate limit exceeded
+                  value:
+                    error: too_many_requests
+                    message: Too many login attempts. Please try again later.
+
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                server_error:
+                  summary: Unexpected server error
+                  value:
+                    error: internal_server_error
+                    message: An unexpected error occurred.
+
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      description: Use a valid refresh token to obtain a new access token.
+
+      security: []
+
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - grant_type
+                - refresh_token
+              properties:
+                grant_type:
+                  type: string
+                  enum: [refresh_token]
+                refresh_token:
+                  type: string
+
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+              examples:
+                success:
+                  summary: Successful token refresh
+                  value:
+                    access_token: "eyJhbGciOiJIUzI1NiJ9.new_access_token"
+                    refresh_token: "eyJhbGciOiJIUzI1NiJ9.new_refresh_token"
+                    token_type: Bearer
+                    expires_in: 900
+                    scope: posts:read
+
+        '400':
+          description: Invalid refresh request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missing_token:
+                  summary: Missing refresh token
+                  value:
+                    error: invalid_request
+                    message: Refresh token is required.
+                invalid_grant:
+                  summary: Invalid grant type
+                  value:
+                    error: unsupported_grant_type
+                    message: Grant type must be refresh_token.
+
+        '401':
+          description: Refresh token expired, revoked or invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                expired_token:
+                  summary: Expired refresh token
+                  value:
+                    error: invalid_token
+                    message: Refresh token has expired.
+                revoked_token:
+                  summary: Revoked refresh token
+                  value:
+                    error: invalid_token
+                    message: Refresh token has been revoked.
+
+        '429':
+          description: Too many refresh requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                rate_limit_exceeded:
+                  summary: Refresh rate limit exceeded
+                  value:
+                    error: too_many_requests
+                    message: Too many refresh requests. Please try again later.
+
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                server_error:
+                  summary: Unexpected server error
+                  value:
+                    error: internal_server_error
+                    message: An unexpected error occurred.
+
+  /posts/{id}:
+    get:
+      tags:
+        - Posts
+      summary: Get a post by ID
+      description: Retrieve a specific post. Requires posts:read scope.
+
+      security:
+        - OAuth2:
+            - posts:read
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Unique ID of the post
+          schema:
+            type: integer
+            minimum: 1
+          example: 123
+
+      responses:
+        '200':
+          description: Post retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+              examples:
+                success:
+                  summary: Post found
+                  value:
+                    id: 123
+                    user_id: 10
+                    content: Hello everyone!
+                    created_at: '2026-10-31T10:00:00Z'
+
+        '400':
+          description: Invalid post ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalid_id:
+                  summary: Invalid post ID
+                  value:
+                    error: invalid_parameter
+                    message: Post ID must be a positive integer.
+
+        '401':
+          description: Missing, invalid or expired access token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missing_token:
+                  summary: Missing access token
+                  value:
+                    error: unauthorized
+                    message: Access token is required.
+                expired_token:
+                  summary: Expired access token
+                  value:
+                    error: invalid_token
+                    message: Access token has expired.
+
+        '403':
+          description: Insufficient permissions or access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                insufficient_scope:
+                  summary: Missing required scope
+                  value:
+                    error: insufficient_scope
+                    message: You need posts:read permission to access this resource.
+                access_denied:
+                  summary: Private post access denied
+                  value:
+                    error: forbidden
+                    message: You do not have permission to view this post.
+
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                post_not_found:
+                  summary: Post does not exist
+                  value:
+                    error: not_found
+                    message: The requested post does not exist.
+
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                rate_limit_exceeded:
+                  summary: API rate limit exceeded
+                  value:
+                    error: too_many_requests
+                    message: Too many requests. Please try again later.
+
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                server_error:
+                  summary: Unexpected server error
+                  value:
+                    error: internal_server_error
+                    message: An unexpected error occurred.
+
+components:
+
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      description: OAuth2 authentication with access and refresh tokens.
+      flows:
+        password:
+          tokenUrl: /auth/login
+          refreshUrl: /auth/refresh
+          scopes:
+            posts:read: Read social network posts
+            posts:write: Create or modify social network posts
+
+  schemas:
+
+    TokenResponse:
+      type: object
+      required:
+        - access_token
+        - refresh_token
+        - token_type
+        - expires_in
+      properties:
+        access_token:
+          type: string
+          description: JWT access token
+        refresh_token:
+          type: string
+          description: Refresh token
+        token_type:
+          type: string
+          example: Bearer
+        expires_in:
+          type: integer
+          description: Access token lifetime in seconds
+          example: 900
+        scope:
+          type: string
+          example: posts:read
+
+    Post:
+      type: object
+      required:
+        - id
+        - user_id
+        - content
+        - created_at
+      properties:
+        id:
+          type: integer
+          example: 123
+        user_id:
+          type: integer
+          example: 10
+        content:
+          type: string
+          example: Hello everyone!
+        created_at:
+          type: string
+          format: date-time
+          example: '2026-10-31T10:00:00Z'
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Human-readable error message
