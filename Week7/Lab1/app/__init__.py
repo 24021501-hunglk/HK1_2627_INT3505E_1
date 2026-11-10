@@ -9,13 +9,22 @@ def create_app(config_class=Config):
 
     db.init_app(app)
 
-    from app.models.product import Product
+    from app.models import Product, Order, OrderItem
     from app.api.products import products_bp
+    from app.api.orders import orders_bp
+    from app.api.health import health_bp
 
     app.register_blueprint(
         products_bp,
         url_prefix="/api/v1/products"
     )
+    
+    app.register_blueprint(
+        orders_bp,
+        url_prefix="/api/v1/orders"
+    )
+    
+    app.register_blueprint(health_bp)
 
     with app.app_context():
         db.create_all()

@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from sqlalchemy import String, Integer, Boolean, DateTime
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.extensions import db
 
@@ -51,6 +51,10 @@ class Product(db.Model):
         DateTime(timezone=True),
         nullable=False,
         default=lambda: datetime.now(timezone.utc)
+    )
+    
+    order_items: Mapped[list["OrderItem"]] = relationship(
+        back_populates="product"    
     )
 
     def __repr__(self):
