@@ -1,0 +1,37 @@
+
+extends:
+  - spectral:oas
+
+rules:
+  # Lỗi 1: Mỗi operation phải có operationId
+  operation-operationId:
+    description: Every operation must have an operationId.
+    message: Operation must have an operationId.
+    severity: error
+    given: "$.paths[*][get,post,put,patch,delete,options,head,trace]"
+    then:
+      field: operationId
+      function: truthy
+
+  # Lỗi 2: HTTP 204 không được khai báo response body
+  delete-204-no-content:
+    description: HTTP 204 must not contain a response body.
+    message: HTTP 204 response must not contain content.
+    severity: error
+    given: "$.paths['/books/{id}'].delete.responses['204']"
+    then:
+      field: content
+      function: undefined
+
+  # Lỗi 3: Book.year phải có kiểu integer
+  book-year-must-be-integer:
+    description: Book.year must be an integer.
+    message: Book.year must have type integer.
+    severity: error
+    given: "$.components.schemas.Book.properties.year"
+    then:
+      field: type
+      function: enumeration
+      functionOptions:
+        values:
+          - integer
