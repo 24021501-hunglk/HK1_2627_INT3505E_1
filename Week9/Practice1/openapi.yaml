@@ -1,0 +1,275 @@
+openapi: 3.0.3
+
+info:
+  title: User Versioning API
+  version: 2.0.0
+  description: >
+    User API demonstrating URI Path Versioning
+    with Flask Blueprint.
+
+servers:
+  - url: http://127.0.0.1:5000
+    description: Local development server
+
+tags:
+  - name: Users V1
+    description: Legacy User API
+  - name: Users V2
+    description: Current User API
+
+paths:
+  /api/v1/users/{uid}:
+    get:
+      tags:
+        - Users V1
+      summary: Get user by ID (v1)
+      operationId: getUserV1
+      deprecated: true
+      description: >
+        Returns the user's full name.
+        This version is scheduled to retire
+        on December 31, 2026.
+
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+
+      responses:
+        '200':
+          description: User found
+          headers:
+            Sunset:
+              $ref: '#/components/headers/Sunset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserV1'
+              example:
+                id: 1
+                full_name: Văn Nguyễn
+                email: a@vnu.vn
+
+        '404':
+          description: User not found
+          headers:
+            Sunset:
+              $ref: '#/components/headers/Sunset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: nf
+
+  /api/v2/users/{uid}:
+    get:
+      tags:
+        - Users V2
+      summary: Get user by ID (v2)
+      operationId: getUserV2
+      description: >
+        Returns first name and last name separately.
+
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserV2'
+              example:
+                id: 1
+                first_name: Văn
+                last_name: Nguyễn
+                email: a@vnu.vn
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v2/users:
+    post:
+      tags:
+        - Users V2
+      summary: Create a new user
+      operationId: createUserV2
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUser'
+            example:
+              first_name: Minh
+              last_name: Phạm
+              email: minh@vnu.vn
+
+      responses:
+        '201':
+          description: User created successfully
+          headers:
+            Location:
+              description: URI of the newly created user
+              schema:
+                type: string
+                format: uri-reference
+              example: /api/v2/users/3
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserV2'
+              example:
+                id: 3
+                first_name: Minh
+                last_name: Phạm
+                email: minh@vnu.vn
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+
+components:
+  parameters:
+    UserId:
+      name: uid
+      in: path
+      required: true
+      description: Unique identifier of the user
+      schema:
+        type: integer
+        minimum: 0
+      example: 1
+
+  headers:
+    Sunset:
+      description: Expected retirement date of API v1
+      schema:
+        type: string
+      example: 'Thu, 31 Dec 2026 23:59:59 GMT'
+
+  schemas:
+    UserV1:
+      type: object
+      required:
+        - id
+        - full_name
+        - email
+      properties:
+        id:
+          type: integer
+          example: 1
+        full_name:
+          type: string
+          example: Văn Nguyễn
+        email:
+          type: string
+          example: a@vnu.vn
+
+    UserV2:
+      type: object
+      required:
+        - id
+        - first_name
+        - last_name
+        - email
+      properties:
+        id:
+          type: integer
+          example: 1
+        first_name:
+          type: string
+          example: Văn
+        last_name:
+          type: string
+          example: Nguyễn
+        email:
+          type: string
+          example: a@vnu.vn
+
+    CreateUser:
+      type: object
+      required:
+        - first_name
+        - last_name
+        - email
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          pattern: '\S'
+          example: Minh
+        last_name:
+          type: string
+          minLength: 1
+          pattern: '\S'
+          example: Phạm
+        email:
+          type: string
+          minLength: 1
+          pattern: '\S'
+          example: minh@vnu.vn
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    NotFound:
+      description: User not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: nf
+
+    BadRequest:
+      description: Invalid request body
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            missingField:
+              summary: Missing required field
+              value:
+                error: bad_request
+                message: first_name is required
+            invalidJson:
+              summary: Invalid JSON body
+              value:
+                error: bad_request
+                message: Invalid JSON body
+
+    Conflict:
+      description: Email already exists
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: conflict
+            message: Email already exists
+
+    UnsupportedMediaType:
+      description: Unsupported Content-Type
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: unsupported_media_type
+            message: Content-Type must be application/json
